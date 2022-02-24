@@ -21,10 +21,23 @@ static Script *		currentScript;
 
 std::mutex mutex;
 
+void* ConvertThreadToFiber() {
+        void* fiber = nullptr;
+
+        if (!IsThreadAFiber()) {
+                fiber = ::ConvertThreadToFiber(nullptr);
+        } else {
+                LOG_PRINT("\tThread was already a fiber, but that's okay (sharing is caring)");
+                fiber = GetCurrentFiber();
+        }
+
+        return fiber;
+}
+
 void Script::Tick() {
 
 	if ( mainFiber == nullptr ) {
-		mainFiber = ConvertThreadToFiber( nullptr );
+		mainFiber = ConvertThreadToFiber();
 	}
 
 	if ( timeGetTime() < wakedAt ) {
